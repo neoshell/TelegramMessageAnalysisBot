@@ -1,0 +1,7 @@
+.classpath
+.project
+.settings/
+lib/
+target/
+log/
+src/main/java/com/neoshell/telegram/messageanalysisbot/offline/HistoryImporter.java
