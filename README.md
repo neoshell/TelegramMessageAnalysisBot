@@ -28,15 +28,17 @@ Note: It has NOT been optimized for high QPS, but works well for limited number 
 Main commands:
 1. <b>rank</b><br>
    Computes a rank based on the number of messages of the given type each user sent.
-2. <b>history</b><br>
+1. <b>timestats</b><br>
+   Outputs an image to show the time distribution of chat messages.
+1. <b>history</b><br>
    Outputs the history of chat titles and commands.
-3. <b>keyword</b><br>
+1. <b>keyword</b><br>
    Computes the keywords of messages in the given time range.
-4. <b>network</b><br>
+1. <b>network</b><br>
    Outputs an image to show the reply relationships between users.
-5. <b>goto</b><br>
+1. <b>goto</b><br>
    Outputs a message which replies to the message you want to go to.
-6. <b>chat</b><br>
+1. <b>chat</b><br>
    Chat with the bot.
 
 ### How to deploy
