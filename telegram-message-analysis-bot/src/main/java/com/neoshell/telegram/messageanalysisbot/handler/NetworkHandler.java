@@ -27,7 +27,6 @@ import com.neoshell.telegram.messageanalysisbot.MessageAnalysisBot;
 import com.neoshell.telegram.messageanalysisbot.User;
 import com.neoshell.telegram.messageanalysisbot.database.DatabaseInterface;
 import com.neoshell.telegram.messageanalysisbot.visualization.GraphVisualizationInterface;
-import com.neoshell.telegram.messageanalysisbot.visualization.Graphviz;
 
 public class NetworkHandler extends Handler {
 
@@ -164,8 +163,8 @@ public class NetworkHandler extends Handler {
       }
 
       // Generate image.
-      File imageFile = File.createTempFile(Graphviz.class.toString() + "_",
-          ".tmpimg", new File(tempDir));
+      File imageFile = File.createTempFile(
+          NetworkHandler.class.toString() + "_", ".tmpimg", new File(tempDir));
       graphVisualizationUtil.visualizeReplyRelationship(graph,
           EXPLICIT_REPLY_EDGE_COLOR, IMPLICIT_REPLY_EDGE_COLOR,
           imageFile.getAbsolutePath());

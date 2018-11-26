@@ -40,6 +40,7 @@ import com.neoshell.telegram.messageanalysisbot.handler.KeywordHandler;
 import com.neoshell.telegram.messageanalysisbot.handler.NetworkHandler;
 import com.neoshell.telegram.messageanalysisbot.handler.OptionHandler;
 import com.neoshell.telegram.messageanalysisbot.handler.RankHandler;
+import com.neoshell.telegram.messageanalysisbot.handler.TimeStatsHandler;
 import com.neoshell.telegram.messageanalysisbot.handler.ChatBotHandler;
 import com.neoshell.telegram.messageanalysisbot.nlp.NLPInterface;
 import com.neoshell.telegram.messageanalysisbot.nlp.NLPUtilClientWrapper;
@@ -236,6 +237,7 @@ public class MessageAnalysisBot extends TelegramLongPollingBot {
     registerHandler(new GoToHandler(this));
     registerHandler(
         new NetworkHandler(this, database, graphVisualizationUtil, tempDir));
+    registerHandler(new TimeStatsHandler(this, database, tempDir));
     registerHandler(new EchoHandler(this));
     registerHandler(new HistoryHandler(this, database));
     registerHandler(new ChatBotHandler(this, database, chatBot));
@@ -281,7 +283,7 @@ public class MessageAnalysisBot extends TelegramLongPollingBot {
   // Returns true if the text starts with / or >.
   private boolean parseCommand(long receiverChatId, long dataSourceChatId,
       String command, Message message)
-          throws TelegramApiException, ClassNotFoundException, SQLException {
+      throws TelegramApiException, ClassNotFoundException, SQLException {
     String[] arguments = command.split("\\s+");
     boolean isCommand = false;
     boolean isClickableCommand = false;

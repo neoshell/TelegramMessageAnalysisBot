@@ -138,7 +138,18 @@ public interface DatabaseInterface {
    */
   public List<Map.Entry<User, Integer>> getRank(long chatId,
       long startEpochSeconds, long endEpochSeconds, String type)
-          throws SQLException;
+      throws SQLException;
+
+  /**
+   * @param chatId
+   * @param startEpochSeconds
+   * @param endEpochSeconds
+   * @return A map. Key: User. Value: an array where index represents time
+   *         bucket in hour (UTC) and value is message count.
+   * @throws SQLException
+   */
+  public Map<User, int[]> getTimeDistributionInHour(long chatId,
+      long startEpochSeconds, long endEpochSeconds) throws SQLException;
 
   /**
    * Gets the reply relationship in the given time range.

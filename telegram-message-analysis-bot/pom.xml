@@ -1,9 +1,10 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.neoshell</groupId>
   <artifactId>telegram-message-analysis-bot</artifactId>
-  <version>1.0.0</version>
+  <version>1.1.0</version>
   <packaging>jar</packaging>
   <name>telegram-message-analysis-bot</name>
   <properties>
@@ -11,6 +12,12 @@
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
   </properties>
+  <repositories>
+    <repository>
+      <id>local</id>
+      <url>file://${basedir}/lib/</url>
+    </repository>
+  </repositories>
   <dependencies>
     <dependency>
       <groupId>junit</groupId>
@@ -68,12 +75,40 @@
       <artifactId>telegrambots</artifactId>
       <version>3.5</version>
     </dependency>
-    <dependency>
+    <dependency> <!-- in local repo -->
       <groupId>com.neoshell.nlp</groupId>
       <artifactId>nlp-util</artifactId>
-      <scope>system</scope>
       <version>0.0.1</version>
-      <systemPath>${basedir}/lib/nlp-util-0.0.1.jar</systemPath>
+    </dependency>
+    <dependency> <!-- in local repo -->
+      <groupId>org.tc33</groupId>
+      <artifactId>jheatchart</artifactId>
+      <version>0.6</version>
     </dependency>
   </dependencies>
+  <build>
+    <plugins>
+      <plugin> <!-- need this to build a runnable jar -->
+        <artifactId>maven-assembly-plugin</artifactId>
+        <configuration>
+          <archive>
+            <manifest>
+              <mainClass>com.neoshell.telegram.messageanalysisbot.MessageAnalysisBot</mainClass>
+            </manifest>
+          </archive>
+          <descriptorRefs>
+            <descriptorRef>jar-with-dependencies</descriptorRef>
+          </descriptorRefs>
+        </configuration>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>single</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
 </project>

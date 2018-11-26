@@ -273,6 +273,42 @@ public class MySQLDatabase implements DatabaseInterface {
   }
 
   @Override
+  public Map<User, int[]> getTimeDistributionInHour(long chatId,
+      long startEpochSeconds, long endEpochSeconds) throws SQLException {
+    Map<User, int[]> map = new HashMap<>();
+    String query = "SELECT * FROM ("
+        + "SELECT user_id, FLOOR(epoch_seconds/3600)%24 AS hour, "
+        + "COUNT(*) AS count FROM messages "
+        + "WHERE chat_id=? AND epoch_seconds>=? AND epoch_seconds<? "
+        + "GROUP BY user_id, hour"
+        + ") AS count_table "
+        + "INNER JOIN ("
+        + "SELECT * FROM users"
+        + ") AS users_table "
+        + "ON count_table.user_id=users_table.user_id "
+        + "ORDER BY count_table.user_id ASC, hour ASC;";
+    PreparedStatement preparedStatement = connection.prepareStatement(query);
+    preparedStatement.setLong(1, chatId);
+    preparedStatement.setLong(2, startEpochSeconds);
+    preparedStatement.setLong(3, endEpochSeconds);
+    ResultSet resultSet = preparedStatement.executeQuery();
+    while (resultSet.next()) {
+      long userId = resultSet.getLong("user_id");
+      String username = resultSet.getString("username");
+      String firstName = resultSet.getString("first_name");
+      String lastName = resultSet.getString("last_name");
+      User user = new User(userId, username, firstName, lastName);
+      if (!map.containsKey(user)) {
+        map.put(user, new int[24]);
+      }
+      map.get(user)[resultSet.getInt("hour")] = resultSet.getInt("count");
+    }
+    resultSet.close();
+    preparedStatement.close();
+    return map;
+  }
+
+  @Override
   public List<Map.Entry<Long, Long>> getReplyList(long chatId,
       long startEpochSeconds, long endEpochSeconds) throws SQLException {
     List<Map.Entry<Long, Long>> replyList = new ArrayList<>();
