@@ -5,7 +5,7 @@ import java.util.Locale;
 import org.apache.commons.cli.Options;
 import org.apache.commons.lang.exception.ExceptionUtils;
 
-import org.telegram.telegrambots.api.objects.Message;
+import org.telegram.telegrambots.meta.api.objects.Message;
 
 import com.neoshell.telegram.messageanalysisbot.CommandUtil;
 import com.neoshell.telegram.messageanalysisbot.MessageAnalysisBot;

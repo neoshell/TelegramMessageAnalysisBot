@@ -20,7 +20,7 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.lang3.ArrayUtils;
 
-import org.telegram.telegrambots.api.objects.Message;
+import org.telegram.telegrambots.meta.api.objects.Message;
 
 import com.neoshell.telegram.messageanalysisbot.MessageAnalysisBot;
 import com.neoshell.telegram.messageanalysisbot.MessageType;
@@ -104,8 +104,9 @@ public class RankHandler extends Handler {
           startEpochSeconds, endEpochSeconds, type.toString());
       if (!isTimeRangeDaily && !rank.isEmpty()) {
         List<com.neoshell.telegram.messageanalysisbot.Message> oldestMessages = database
-            .getMessagesSortedByTime(dataSourceChatId, EnumSet.of(type), 1,
-                true, true);
+            .getMessagesSortedByTime(dataSourceChatId, EnumSet.of(type),
+                /* contentLike= */null, /* limit= */1, /* isOldest= */true,
+                /* isAscending= */true);
         startEpochSeconds = oldestMessages.get(0).getEpochSeconds();
       }
       database.closeConnection();
@@ -199,6 +200,8 @@ public class RankHandler extends Handler {
       return responseResource.getString("rank.title.chatTitle");
     case CHAT_PHOTO:
       return responseResource.getString("rank.title.chatPhoto");
+    case PINNED_MESSAGE:
+      return responseResource.getString("rank.title.pinnedMessage");
     default:
       break;
     }

@@ -9,8 +9,8 @@ import java.util.TimeZone;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
 
-import org.telegram.telegrambots.api.objects.Message;
-import org.telegram.telegrambots.exceptions.TelegramApiException;
+import org.telegram.telegrambots.meta.api.objects.Message;
+import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import com.neoshell.telegram.messageanalysisbot.MarkdownFormatter;
 import com.neoshell.telegram.messageanalysisbot.MessageAnalysisBot;

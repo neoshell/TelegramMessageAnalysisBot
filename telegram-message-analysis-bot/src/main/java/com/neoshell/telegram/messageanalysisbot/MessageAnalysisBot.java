@@ -18,14 +18,16 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.ini4j.Wini;
 
 import org.telegram.telegrambots.ApiContextInitializer;
-import org.telegram.telegrambots.TelegramBotsApi;
-import org.telegram.telegrambots.api.methods.send.SendMessage;
-import org.telegram.telegrambots.api.methods.send.SendPhoto;
-import org.telegram.telegrambots.api.objects.Message;
-import org.telegram.telegrambots.api.objects.Update;
-import org.telegram.telegrambots.api.objects.User;
+import org.telegram.telegrambots.meta.TelegramBotsApi;
+import org.telegram.telegrambots.meta.api.methods.GetFile;
+import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
+import org.telegram.telegrambots.meta.api.methods.send.SendSticker;
+import org.telegram.telegrambots.meta.api.objects.Message;
+import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.api.objects.User;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
-import org.telegram.telegrambots.exceptions.TelegramApiException;
+import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import com.neoshell.telegram.messageanalysisbot.database.MySQLDatabase;
 import com.neoshell.telegram.messageanalysisbot.chatbot.ChatBotInterface;
@@ -146,11 +148,23 @@ public class MessageAnalysisBot extends TelegramLongPollingBot {
     sendTextMessage(chatId, text, ParseMode.NULL, 0);
   }
 
+  public void sendStickerMessage(long chatId, String stickerFileId)
+      throws TelegramApiException {
+    SendSticker sendSticker = new SendSticker().setChatId(chatId)
+        .setSticker(stickerFileId);
+    execute(sendSticker);
+  }
+
   public void sendPhotoMessage(long chatId, String photoPath, String caption)
       throws TelegramApiException {
     SendPhoto sendPhoto = new SendPhoto().setChatId(chatId)
-        .setNewPhoto(new File(photoPath)).setCaption(caption);
-    sendPhoto(sendPhoto);
+        .setPhoto(new File(photoPath)).setCaption(caption);
+    execute(sendPhoto);
+  }
+
+  public String getFileUrl(String fileId) throws TelegramApiException {
+    GetFile getFile = new GetFile().setFileId(fileId);
+    return execute(getFile).getFileUrl(botToken);
   }
 
   public TimeZone getDefaultTimeZone() {
@@ -272,6 +286,8 @@ public class MessageAnalysisBot extends TelegramLongPollingBot {
       messageType = MessageType.AUDIO;
     } else if (message.getVoice() != null) {
       messageType = MessageType.VOICE;
+    } else if (message.getPinnedMessage() != null) {
+      messageType = MessageType.PINNED_MESSAGE;
     } else if (message.getNewChatTitle() != null) {
       messageType = MessageType.CHAT_TITLE;
     } else if (message.getNewChatPhoto() != null) {
@@ -361,42 +377,51 @@ public class MessageAnalysisBot extends TelegramLongPollingBot {
     if (message.getReplyToMessage() != null) {
       replyToMessageId = message.getReplyToMessage().getMessageId();
       replyToUserId = message.getReplyToMessage().getFrom().getId();
+    } else if (message.getPinnedMessage() != null) {
+      replyToMessageId = message.getPinnedMessage().getMessageId();
+      replyToUserId = message.getPinnedMessage().getFrom().getId();
+    }
+    String content = getMessageContent(message, messageType);
+    if (messageType == MessageType.UNKNOWN) {
+      logger.info("Message with unknown type: " + message.toString());
     }
 
     database.openConnection();
-    switch (messageType) {
-    case TEXT:
-    case COMMAND:
-      database.addMessage(new com.neoshell.telegram.messageanalysisbot.Message(
-          chatId, messageId, timeEpochSeconds, userId, replyToMessageId,
-          replyToUserId, message.getText(), messageType));
-      break;
-    case STICKER:
-    case GIF:
-    case IMAGE:
-    case VIDEO:
-    case AUDIO:
-    case VOICE:
-    case CHAT_PHOTO:
-      database.addMessage(new com.neoshell.telegram.messageanalysisbot.Message(
-          chatId, messageId, timeEpochSeconds, userId, replyToMessageId,
-          replyToUserId, "", messageType));
-      break;
-    case CHAT_TITLE:
-      database.addMessage(new com.neoshell.telegram.messageanalysisbot.Message(
-          chatId, messageId, timeEpochSeconds, userId, replyToMessageId,
-          replyToUserId, message.getNewChatTitle(), messageType));
-      break;
-    default:
-      database.addMessage(new com.neoshell.telegram.messageanalysisbot.Message(
-          chatId, messageId, timeEpochSeconds, userId, replyToMessageId,
-          replyToUserId, "", MessageType.UNKNOWN));
-      logger.info("Unable to handle message: " + message.toString());
-      break;
-    }
+    database.addMessage(new com.neoshell.telegram.messageanalysisbot.Message(
+        chatId, messageId, timeEpochSeconds, userId, replyToMessageId,
+        replyToUserId, content, messageType));
     database.addOrUpdateUser(new com.neoshell.telegram.messageanalysisbot.User(
         userId, username, firstName, lastName));
     database.closeConnection();
+  }
+
+  private String getMessageContent(Message message, MessageType messageType) {
+    switch (messageType) {
+    case TEXT:
+    case COMMAND:
+      return message.getText();
+    case STICKER:
+      return message.getSticker().getFileId();
+    case GIF:
+      return message.getDocument().getFileId();
+    case IMAGE:
+      return message.getPhoto().get(2).getFileId();
+    case VIDEO:
+      return message.getVideo().getFileId();
+    case AUDIO:
+      return message.getAudio().getFileId();
+    case VOICE:
+      return message.getVoice().getFileId();
+    case CHAT_PHOTO:
+      return message.getNewChatPhoto().get(2).getFileId();
+    case CHAT_TITLE:
+      return message.getNewChatTitle();
+    case PINNED_MESSAGE:
+      String text = message.getPinnedMessage().getText();
+      return text != null ? text : "";
+    default:
+      return "";
+    }
   }
 
   // Retrieves language option according to the chat id.

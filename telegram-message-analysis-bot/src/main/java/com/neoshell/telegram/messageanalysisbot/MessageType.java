@@ -3,7 +3,8 @@ package com.neoshell.telegram.messageanalysisbot;
 public enum MessageType {
   UNKNOWN("unknown"), TEXT("text"), STICKER("sticker"), GIF("gif"), IMAGE(
       "image"), VIDEO("video"), AUDIO("audio"), VOICE("voice"), CHAT_TITLE(
-          "chat_title"), CHAT_PHOTO("chat_photo"), COMMAND("command");
+          "chat_title"), CHAT_PHOTO("chat_photo"), COMMAND(
+              "command"), PINNED_MESSAGE("pinned_message");
 
   private String type;
 
@@ -29,6 +30,8 @@ public enum MessageType {
       return CHAT_PHOTO;
     case "command":
       return COMMAND;
+    case "pinned_message":
+      return PINNED_MESSAGE;
     default:
       return UNKNOWN;
     }

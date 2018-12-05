@@ -101,7 +101,9 @@ public interface DatabaseInterface {
    * Gets messages sorted by time.
    * 
    * @param chatId
-   * @param type
+   * @param types
+   * @param contentLike
+   *          If not null, results need to match the text in content.
    * @param limit
    *          The max number of messages retrieved from database.
    * @param isOldest
@@ -113,8 +115,17 @@ public interface DatabaseInterface {
    * @throws SQLException
    */
   public List<Message> getMessagesSortedByTime(long chatId,
-      Collection<MessageType> types, int limit, boolean isOldest,
-      boolean isAscending) throws SQLException;
+      Collection<MessageType> types, String contentLike, int limit,
+      boolean isOldest, boolean isAscending) throws SQLException;
+  
+  /**
+   * @param messageIds
+   *          Ids of the messages you want to retrieve.
+   * @return a map where the key is message id and the value is the message.
+   * @throws SQLException
+   */
+  public Map<Long, Message> getMessagesById(List<Long> messageIds)
+      throws SQLException;
 
   /**
    * Gets the ids of the chat that the bot has ever received messages from.

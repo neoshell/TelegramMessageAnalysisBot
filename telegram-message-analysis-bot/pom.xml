@@ -4,7 +4,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.neoshell</groupId>
   <artifactId>telegram-message-analysis-bot</artifactId>
-  <version>1.1.0</version>
+  <version>1.2.0</version>
   <packaging>jar</packaging>
   <name>telegram-message-analysis-bot</name>
   <properties>
@@ -73,7 +73,7 @@
     <dependency>
       <groupId>org.telegram</groupId>
       <artifactId>telegrambots</artifactId>
-      <version>3.5</version>
+      <version>4.1</version>
     </dependency>
     <dependency> <!-- in local repo -->
       <groupId>com.neoshell.nlp</groupId>

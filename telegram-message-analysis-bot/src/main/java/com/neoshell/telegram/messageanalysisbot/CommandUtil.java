@@ -24,4 +24,8 @@ public class CommandUtil {
         .replaceFirst(NON_CLICKABLE_COMMAND_PREFIX, CLICKABLE_COMMAND_PREFIX);
   }
 
+  public static String getClickableGotoCommand(long messageId) {
+    return nonClickableToClickable(">goto -m " + messageId);
+  }
+
 }

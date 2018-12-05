@@ -17,7 +17,7 @@ import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.Options;
 import org.apache.commons.lang.exception.ExceptionUtils;
 
-import org.telegram.telegrambots.api.objects.Message;
+import org.telegram.telegrambots.meta.api.objects.Message;
 
 import com.neoshell.telegram.messageanalysisbot.CommandUtil;
 import com.neoshell.telegram.messageanalysisbot.MessageAnalysisBot;
@@ -102,7 +102,8 @@ public class KeywordHandler extends Handler {
       // Get latest texts in ascending order of time.
       List<com.neoshell.telegram.messageanalysisbot.Message> latestMessages = database
           .getMessagesSortedByTime(dataSourceChatId,
-              Arrays.asList(MessageType.values()), messageRange, false, true);
+              Arrays.asList(MessageType.values()), /* contentLike= */null,
+              messageRange, /* isOldest= */false, /* isAscending= */true);
       TimeZone timeZone = getTimeZone(dataSourceChatId, database);
       database.closeConnection();
 
@@ -124,9 +125,8 @@ public class KeywordHandler extends Handler {
         // Show a goto command if possible.
         long messageId = keywordInfo.getFirstMessageId();
         if (messageId > 0) {
-          String gotoCommand = ">goto -m " + messageId;
-          sendTextBuilder.append(
-              "    " + CommandUtil.nonClickableToClickable(gotoCommand));
+          sendTextBuilder
+              .append("    " + CommandUtil.getClickableGotoCommand(messageId));
         }
         sendTextBuilder.append("\n");
         for (String keyword : keywordInfo.getKeywords()) {

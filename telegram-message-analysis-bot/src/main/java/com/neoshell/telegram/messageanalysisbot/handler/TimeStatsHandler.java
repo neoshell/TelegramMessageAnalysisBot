@@ -21,7 +21,7 @@ import org.apache.commons.lang.time.DateUtils;
 
 import org.tc33.jheatchart.HeatChart;
 
-import org.telegram.telegrambots.api.objects.Message;
+import org.telegram.telegrambots.meta.api.objects.Message;
 
 import com.neoshell.telegram.messageanalysisbot.MessageAnalysisBot;
 import com.neoshell.telegram.messageanalysisbot.User;

@@ -170,16 +170,7 @@ public class MySQLDatabase implements DatabaseInterface {
     preparedStatement.setLong(paramIndex++, endEpochSeconds);
     ResultSet resultSet = preparedStatement.executeQuery();
     while (resultSet.next()) {
-      long messageId = resultSet.getLong("message_id");
-      long epochSeconds = resultSet.getLong("epoch_seconds");
-      long userId = resultSet.getLong("user_id");
-      long replyToMessageId = resultSet.getLong("reply_to_message_id");
-      long replyToUserId = resultSet.getLong("reply_to_user_id");
-      String content = resultSet.getString("content");
-      MessageType type = MessageType
-          .parseFromString(resultSet.getString("type"));
-      messages.add(new Message(chatId, messageId, epochSeconds, userId,
-          replyToMessageId, replyToUserId, content, type));
+      messages.add(createMessageFromResultSet(resultSet));
     }
     resultSet.close();
     preparedStatement.close();
@@ -188,13 +179,14 @@ public class MySQLDatabase implements DatabaseInterface {
 
   @Override
   public List<Message> getMessagesSortedByTime(long chatId,
-      Collection<MessageType> types, int limit, boolean isOldest,
-      boolean isAscending) throws SQLException {
+      Collection<MessageType> types, String contentLike, int limit,
+      boolean isOldest, boolean isAscending) throws SQLException {
     List<Message> messages = new ArrayList<>();
     String query = "SELECT * FROM ("
         + "SELECT * FROM messages "
-        + "WHERE chat_id=? AND "
-        + "type IN (" + commaSeparatedQuestionMarks(types.size()) + ") "
+        + "WHERE chat_id=? "
+        + "AND type IN (" + commaSeparatedQuestionMarks(types.size()) + ") "
+        + (contentLike != null ? "AND content LIKE ? " : "")
         + "ORDER BY epoch_seconds " + (isOldest ? "ASC" : "DESC") + " LIMIT ?"
         + ") AS message_table "
         + "ORDER BY epoch_seconds " + (isAscending ? "ASC" : "DESC") + ";";
@@ -204,22 +196,38 @@ public class MySQLDatabase implements DatabaseInterface {
     for (MessageType type : types) {
       preparedStatement.setString(paramIndex++, type.toString());
     }
+    if (contentLike != null) {
+      preparedStatement.setString(paramIndex++, contentLike);
+    }
     preparedStatement.setInt(paramIndex++, limit);
     ResultSet resultSet = preparedStatement.executeQuery();
     while (resultSet.next()) {
-      long messageId = resultSet.getLong("message_id");
-      long epochSeconds = resultSet.getLong("epoch_seconds");
-      long userId = resultSet.getLong("user_id");
-      long replyToMessageId = resultSet.getLong("reply_to_message_id");
-      long replyToUserId = resultSet.getLong("reply_to_user_id");
-      String content = resultSet.getString("content");
-      MessageType type = MessageType
-          .parseFromString(resultSet.getString("type"));
-      messages.add(new Message(chatId, messageId, epochSeconds, userId,
-          replyToMessageId, replyToUserId, content, type));
+      messages.add(createMessageFromResultSet(resultSet));
     }
     resultSet.close();
     preparedStatement.close();
+    return messages;
+  }
+
+  @Override
+  public Map<Long, Message> getMessagesById(List<Long> messageIds)
+      throws SQLException {
+    Map<Long, Message> messages = new HashMap<>();
+    if (messageIds.isEmpty()) {
+      return messages;
+    }
+    String query = "SELECT * FROM messages WHERE message_id IN ("
+        + commaSeparatedQuestionMarks(messageIds.size()) + ");";
+    PreparedStatement preparedStatement = connection.prepareStatement(query);
+    int paramIndex = 1;
+    for (Long messageId : messageIds) {
+      preparedStatement.setLong(paramIndex++, messageId);
+    }
+    ResultSet resultSet = preparedStatement.executeQuery();
+    while (resultSet.next()) {
+      Message message = createMessageFromResultSet(resultSet);
+      messages.put(message.getMessageId(), message);
+    }
     return messages;
   }
 
@@ -446,12 +454,29 @@ public class MySQLDatabase implements DatabaseInterface {
   }
 
   private String commaSeparatedQuestionMarks(int valueSize) {
+    if (valueSize <= 0) {
+      return "";
+    }
     StringBuilder sb = new StringBuilder();
     for (int i = 0; i < valueSize; i++) {
       sb.append("?,");
     }
     sb.deleteCharAt(sb.length() - 1); // Remove the last comma.
     return sb.toString();
+  }
+
+  private Message createMessageFromResultSet(ResultSet resultSet)
+      throws SQLException {
+    long chatId = resultSet.getLong("chat_id");
+    long messageId = resultSet.getLong("message_id");
+    long epochSeconds = resultSet.getLong("epoch_seconds");
+    long userId = resultSet.getLong("user_id");
+    long replyToMessageId = resultSet.getLong("reply_to_message_id");
+    long replyToUserId = resultSet.getLong("reply_to_user_id");
+    String content = resultSet.getString("content");
+    MessageType type = MessageType.parseFromString(resultSet.getString("type"));
+    return new Message(chatId, messageId, epochSeconds, userId,
+        replyToMessageId, replyToUserId, content, type);
   }
 
 }
