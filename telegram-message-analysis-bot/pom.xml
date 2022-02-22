@@ -4,7 +4,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.neoshell</groupId>
   <artifactId>telegram-message-analysis-bot</artifactId>
-  <version>1.2.0</version>
+  <version>1.2.1</version>
   <packaging>jar</packaging>
   <name>telegram-message-analysis-bot</name>
   <properties>
@@ -43,7 +43,7 @@
     <dependency>
       <groupId>mysql</groupId>
       <artifactId>mysql-connector-java</artifactId>
-      <version>5.1.6</version>
+      <version>5.1.44</version>
     </dependency>
     <dependency>
       <groupId>org.jgrapht</groupId>
@@ -73,7 +73,7 @@
     <dependency>
       <groupId>org.telegram</groupId>
       <artifactId>telegrambots</artifactId>
-      <version>4.1</version>
+      <version>5.7.1</version>
     </dependency>
     <dependency> <!-- in local repo -->
       <groupId>com.neoshell.nlp</groupId>

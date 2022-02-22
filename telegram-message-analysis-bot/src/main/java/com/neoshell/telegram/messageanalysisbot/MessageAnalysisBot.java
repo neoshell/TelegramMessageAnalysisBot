@@ -17,17 +17,17 @@ import org.apache.commons.lang3.ArrayUtils;
 
 import org.ini4j.Wini;
 
-import org.telegram.telegrambots.ApiContextInitializer;
 import org.telegram.telegrambots.meta.TelegramBotsApi;
 import org.telegram.telegrambots.meta.api.methods.GetFile;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
-import org.telegram.telegrambots.meta.api.methods.send.SendSticker;
+import org.telegram.telegrambots.meta.api.objects.InputFile;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.User;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
+import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
 
 import com.neoshell.telegram.messageanalysisbot.database.MySQLDatabase;
 import com.neoshell.telegram.messageanalysisbot.chatbot.ChatBotInterface;
@@ -127,10 +127,11 @@ public class MessageAnalysisBot extends TelegramLongPollingBot {
       int replyToMessageId) throws TelegramApiException {
     int num = text.length() / MAX_MESSAGE_LENGTH + 1;
     for (int i = 0; i < num; i++) {
-      SendMessage sendMessage = new SendMessage().setChatId(chatId)
-          .setParseMode(parseMode.toString())
-          .setText(text.substring(MAX_MESSAGE_LENGTH * i,
-              Math.min(text.length(), MAX_MESSAGE_LENGTH * (i + 1))));
+      SendMessage sendMessage = new SendMessage();
+      sendMessage.setChatId(Long.valueOf(chatId).toString());
+      sendMessage.setParseMode(parseMode.toString());
+      sendMessage.setText(text.substring(MAX_MESSAGE_LENGTH * i,
+          Math.min(text.length(), MAX_MESSAGE_LENGTH * (i + 1))));
       if (replyToMessageId > 0) {
         sendMessage.setReplyToMessageId(replyToMessageId);
       }
@@ -148,22 +149,18 @@ public class MessageAnalysisBot extends TelegramLongPollingBot {
     sendTextMessage(chatId, text, ParseMode.NULL, 0);
   }
 
-  public void sendStickerMessage(long chatId, String stickerFileId)
-      throws TelegramApiException {
-    SendSticker sendSticker = new SendSticker().setChatId(chatId)
-        .setSticker(stickerFileId);
-    execute(sendSticker);
-  }
-
   public void sendPhotoMessage(long chatId, String photoPath, String caption)
       throws TelegramApiException {
-    SendPhoto sendPhoto = new SendPhoto().setChatId(chatId)
-        .setPhoto(new File(photoPath)).setCaption(caption);
+    SendPhoto sendPhoto = new SendPhoto();
+    sendPhoto.setChatId(Long.valueOf(chatId).toString());
+    sendPhoto.setPhoto(new InputFile(new File(photoPath)));
+    sendPhoto.setCaption(caption);
     execute(sendPhoto);
   }
 
   public String getFileUrl(String fileId) throws TelegramApiException {
-    GetFile getFile = new GetFile().setFileId(fileId);
+    GetFile getFile = new GetFile();
+    getFile.setFileId(fileId);
     return execute(getFile).getFileUrl(botToken);
   }
 
@@ -449,10 +446,10 @@ public class MessageAnalysisBot extends TelegramLongPollingBot {
       return;
     }
     try {
-      ApiContextInitializer.init();
-      TelegramBotsApi botsApi = new TelegramBotsApi();
+      TelegramBotsApi telegramBotsApi = new TelegramBotsApi(
+          DefaultBotSession.class);
       String configFilePath = args.length >= 1 ? args[0] : DEFAULT_CONFIG_PATH;
-      botsApi.registerBot(new MessageAnalysisBot(configFilePath));
+      telegramBotsApi.registerBot(new MessageAnalysisBot(configFilePath));
     } catch (TelegramApiException e) {
       logger.severe(ExceptionUtils.getStackTrace(e));
     }
