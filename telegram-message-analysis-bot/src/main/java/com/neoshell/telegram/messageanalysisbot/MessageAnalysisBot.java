@@ -109,6 +109,13 @@ public class MessageAnalysisBot extends TelegramLongPollingBot {
       long chatId = message.getChatId();
       if (!isChatInWhiteList(chatId)) {
         logger.info("Update from unauthorized chat: " + chatId);
+        try {
+          sendTextMessage(chatId,
+              "To use this bot, please contact the bot owner and whitelist the group id: "
+                  + chatId);
+        } catch (Exception e) {
+          logger.severe(ExceptionUtils.getStackTrace(e));
+        }
         return;
       }
 
